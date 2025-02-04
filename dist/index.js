@@ -39033,96 +39033,77 @@ function markdownReport(reports, commit, options) {
     filteredFiles = null,
     reportName = "Coverage Report",
   } = options || {};
-  const status = (total) =>
-    total >= minimumCoverage ? ":white_check_mark:" : ":x:";
-  // Setup files
-  const files = [];
-  let output = "";
+
+  let output = `# ${reportName}\n\n`;
+
+  // Add summary table
+  const summaryTable = [
+    ["Status", "Category", "Percentage", "Covered / Total"],
+    ["-", "-", "-", "-"],
+  ];
+
   for (const report of reports) {
-    const folder = reports.length <= 1 ? "" : ` ${report.folder}`;
+    summaryTable.push([
+      ":large_blue_circle:",
+      "Lines",
+      `${report.line.toFixed(2)}%`,
+      `${report.covered} / ${report.total}`,
+    ]);
+    summaryTable.push([
+      ":large_blue_circle:",
+      "Statements",
+      `${report.line.toFixed(2)}%`,
+      `${report.covered} / ${report.total}`,
+    ]);
+    summaryTable.push([
+      ":large_blue_circle:",
+      "Functions",
+      `${report.functions.toFixed(2)}%`,
+      `${report.functionsCovered} / ${report.functionsTotal}`,
+    ]);
+    summaryTable.push([
+      ":large_blue_circle:",
+      "Branches",
+      `${report.branch.toFixed(2)}%`,
+      `${report.branchCovered} / ${report.branchTotal}`,
+    ]);
+  }
+
+  output +=
+    summaryTable.map((row) => `| ${row.join(" | ")} |`).join("\n") + "\n\n";
+
+  // Add file coverage section
+  output += "## File Coverage\n\n";
+
+  const fileTable = [
+    ["File", "Stmts", "Branches", "Functions", "Lines", "Uncovered Lines"],
+    ["-", ":-:", ":-:", ":-:", ":-:", "-"],
+  ];
+
+  for (const report of reports) {
     for (const file of report.files.filter((file) => {
-      core.debug(file.filename);
-      core.debug(
-        filteredFiles.some((changedFile) =>
-          changedFile.endsWith(file.filename),
-        ),
-      );
       return (
         filteredFiles == null ||
         filteredFiles.some((changedFile) => changedFile.endsWith(file.filename))
       );
     })) {
-      const fileTotal = Math.floor(file.total);
-      const fileLines = Math.floor(file.line);
-      const fileBranch = Math.floor(file.branch);
-      files.push([
-        escapeMarkdown(showClassNames ? file.name : file.filename),
-        `\`${fileTotal}%\``,
-        showLine ? `\`${fileLines}%\`` : undefined,
-        showBranch ? `\`${fileBranch}%\`` : undefined,
-        status(fileTotal),
-        showMissing && file.missing
-          ? formatMissingLines(
-              formatFileUrl(linkMissingLinesSourceDir, file.filename, commit),
-              file.missing,
-              showMissingMaxLength,
-              linkMissingLines,
-            )
-          : undefined,
+      fileTable.push([
+        file.filename,
+        `${file.statements.toFixed(2)}%`,
+        `${file.branch.toFixed(2)}%`,
+        `${file.functions.toFixed(2)}%`,
+        `${file.line.toFixed(2)}%`,
+        file.missing
+          ? file.missing.map((range) => formatRangeText(range)).join(", ")
+          : "",
       ]);
     }
-
-    // Construct table
-    /*
-    | File          | Coverage |                    |
-    |---------------|:--------:|:------------------:|
-    | **All files** | `78%`    | :x:                |
-    | foo.py        | `80%`    | :white_check_mark: |
-    | bar.py        | `75%`    | :x:                |
-
-    _Minimum allowed coverage is `80%`_
-    */
-
-    const total = Math.floor(report.total);
-    const linesTotal = Math.floor(report.line);
-    const branchTotal = Math.floor(report.branch);
-    const table = [
-      [
-        "File",
-        "Coverage",
-        showLine ? "Lines" : undefined,
-        showBranch ? "Branches" : undefined,
-        " ",
-        showMissing ? "Missing" : undefined,
-      ],
-      [
-        "-",
-        ":-:",
-        showLine ? ":-:" : undefined,
-        showBranch ? ":-:" : undefined,
-        ":-:",
-        showMissing ? ":-:" : undefined,
-      ],
-      [
-        "**All files**",
-        `\`${total}%\``,
-        showLine ? `\`${linesTotal}%\`` : undefined,
-        showBranch ? `\`${branchTotal}%\`` : undefined,
-        status(total),
-        showMissing ? " " : undefined,
-      ],
-      ...files,
-    ]
-      .map((row) => {
-        return `| ${row.filter(Boolean).join(" | ")} |`;
-      })
-      .join("\n");
-    const titleText = `<strong>${reportName}${folder}</strong>`;
-    output += `${titleText}\n\n${table}\n\n`;
   }
-  const minimumCoverageText = `_Minimum allowed coverage is \`${minimumCoverage}%\`_`;
-  const footerText = `<p align="right">${credits} against ${commit} </p>`;
-  output += `${minimumCoverageText}\n\n${footerText}`;
+
+  output += fileTable.map((row) => `| ${row.join(" | ")} |`).join("\n") + "\n";
+
+  const footerText = `\n<p align="right">${credits} against ${commit}</p>`;
+  output += footerText;
   return output;
 }
 

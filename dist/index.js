@@ -39043,24 +39043,28 @@ function markdownReport(reports, commit, options) {
     for (const file of report.files.filter((file) => {
       if (filteredFiles == null) return true;
 
-      // Coverage report paths are relative to workspace
       const coverageFile = file.filename;
-      // GitHub changed files are relative to git repository
 
-      // Try both with and without leading path segments
       const isIncluded = filteredFiles.some((changedFile) => {
-        // Try exact match first
-        const exactMatch = changedFile.endsWith(coverageFile);
+        // Get the extension for both files
+        const coverageExt = coverageFile.lastIndexOf(".");
+        const changedExt = changedFile.lastIndexOf(".");
 
-        // Try without leading path segments
-        const changedFileBase = changedFile.split("/").pop();
-        const coverageFileBase = coverageFile.split("/").pop();
-        const baseMatch = changedFileBase === coverageFileBase;
+        // Get base paths without any suffix before extension
+        const coverageBase = coverageFile.slice(0, coverageExt);
+        const changedBase = changedFile.slice(0, changedExt);
+
+        // Check if one is a prefix of the other
+        const match =
+          coverageBase.startsWith(changedBase) ||
+          changedBase.startsWith(coverageBase);
 
         core.debug(`  ${changedFile} vs ${coverageFile}`);
-        core.debug(`    exact: ${exactMatch}, base: ${baseMatch}`);
+        core.debug(
+          `    base comparison: ${changedBase} vs ${coverageBase}: ${match}`,
+        );
 
-        return exactMatch || baseMatch;
+        return match;
       });
 
       core.debug(`Comparing ${coverageFile} - included: ${isIncluded}`);

@@ -38869,6 +38869,7 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const { escapeMarkdown } = __nccwpck_require__(1608);
 const { processCoverage } = __nccwpck_require__(4129);
+const { RequestError } = __nccwpck_require__(537);
 
 const client = new github.getOctokit(
   core.getInput("repo_token", { required: true }),

@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const github = require("@actions/github");
 const { escapeMarkdown } = require("./utils");
 const { processCoverage } = require("./cobertura");
+const { RequestError } = require("@octokit/request-error");
 
 const client = new github.getOctokit(
   core.getInput("repo_token", { required: true }),

@@ -176,6 +176,7 @@ function markdownReport(reports, commit, options) {
   ];
 
   for (const report of reports) {
+    core.debug(report);
     const lineRate = (report["line-rate"] || 0) * 100;
     const branchRate = (report["branch-rate"] || 0) * 100;
     const linesCovered = report["lines-covered"] || 0;

@@ -183,11 +183,17 @@ function markdownReport(reports, commit, options) {
       // Try both with and without leading path segments
       const isIncluded = filteredFiles.some((changedFile) => {
         // Try exact match first
-        if (changedFile.endsWith(coverageFile)) return true;
+        const exactMatch = changedFile.endsWith(coverageFile);
+
         // Try without leading path segments
         const changedFileBase = changedFile.split("/").pop();
         const coverageFileBase = coverageFile.split("/").pop();
-        return changedFileBase === coverageFileBase;
+        const baseMatch = changedFileBase === coverageFileBase;
+
+        core.debug(`  ${changedFile} vs ${coverageFile}`);
+        core.debug(`    exact: ${exactMatch}, base: ${baseMatch}`);
+
+        return exactMatch || baseMatch;
       });
 
       core.debug(`Comparing ${coverageFile} - included: ${isIncluded}`);

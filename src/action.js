@@ -54,7 +54,7 @@ async function action(payload) {
   const changedFiles = onlyChangedFiles
     ? await listChangedFiles(pullRequestNumber)
     : null;
-
+  core.info("pullRequestNumber", pullRequestNumber);
   core.info("changedFiles", changedFiles);
 
   const reports = await processCoverage(path, { skipCovered });
@@ -289,11 +289,46 @@ async function addCheck(body, reportName, sha, conclusion) {
 }
 
 async function listChangedFiles(pullRequestNumber) {
-  const files = await client.rest.pulls.listFiles({
-    pull_number: pullRequestNumber,
-    ...github.context.repo,
-  });
-  return files.data.map((file) => file.filename);
+  try {
+    const paths = [];
+
+    core.startGroup(
+      `Fetching list of changed files for PR#${prNumber} from Github API`,
+    );
+
+    const iterator = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
+      owner: github.context.repo.owner,
+      repo: github.context.repo.repo,
+      pull_number: pullRequestNumber,
+      per_page: 100,
+    });
+
+    for await (const response of iterator) {
+      core.info(`Received ${response.data.length} items`);
+
+      for (const file of response.data) {
+        core.debug(`[${file.status}] ${file.filename}`);
+        if (["added", "modified"].includes(file.status)) {
+          paths.push(file.filename);
+        }
+      }
+    }
+    return paths;
+  } catch (error) {
+    if (
+      error instanceof RequestError &&
+      (error.status === 404 || error.status === 403)
+    ) {
+      core.warning(
+        `Couldn't fetch changes of PR due to error:\n[${error.name}]\n${error.message}`,
+      );
+      return [];
+    }
+
+    throw error;
+  } finally {
+    core.endGroup();
+  }
 }
 
 async function pullRequestInfo(payload = {}) {

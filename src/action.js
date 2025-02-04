@@ -56,8 +56,8 @@ async function action(payload) {
     ? await listChangedFiles(pullRequestNumber)
     : null;
 
-  core.info(pullRequestNumber);
-  core.info(changedFiles);
+  core.debug(pullRequestNumber);
+  core.debug(changedFiles);
 
   const reports = await processCoverage(path, { skipCovered });
   const comment = markdownReport(reports, commit, {
@@ -173,9 +173,10 @@ function markdownReport(reports, commit, options) {
   let output = "";
   for (const report of reports) {
     const folder = reports.length <= 1 ? "" : ` ${report.folder}`;
-    for (const file of report.files.filter(
-      (file) => filteredFiles == null || filteredFiles.includes(file.filename),
-    )) {
+    for (const file of report.files.filter((file) => {
+      core.debug(file.filename);
+      return filteredFiles == null || filteredFiles.includes(file.filename);
+    })) {
       const fileTotal = Math.floor(file.total);
       const fileLines = Math.floor(file.line);
       const fileBranch = Math.floor(file.branch);

@@ -176,39 +176,30 @@ function markdownReport(reports, commit, options) {
   ];
 
   for (const report of reports) {
-    const line = report.line || 0;
-    const covered = report.covered || 0;
-    const total = report.total || 0;
-    const functions = report.functions || 0;
-    const functionsCovered = report.functionsCovered || 0;
-    const functionsTotal = report.functionsTotal || 0;
-    const branch = report.branch || 0;
-    const branchCovered = report.branchCovered || 0;
-    const branchTotal = report.branchTotal || 0;
+    const lineRate = (report["line-rate"] || 0) * 100;
+    const branchRate = (report["branch-rate"] || 0) * 100;
+    const linesCovered = report["lines-covered"] || 0;
+    const linesValid = report["lines-valid"] || 0;
+    const branchesCovered = report["branches-covered"] || 0;
+    const branchesValid = report["branches-valid"] || 0;
 
     summaryTable.push([
       ":large_blue_circle:",
       "Lines",
-      `${line.toFixed(2)}%`,
-      `${covered} / ${total}`,
+      `${lineRate.toFixed(2)}%`,
+      `${linesCovered} / ${linesValid}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Statements",
-      `${line.toFixed(2)}%`,
-      `${covered} / ${total}`,
-    ]);
-    summaryTable.push([
-      ":large_blue_circle:",
-      "Functions",
-      `${functions.toFixed(2)}%`,
-      `${functionsCovered} / ${functionsTotal}`,
+      `${lineRate.toFixed(2)}%`,
+      `${linesCovered} / ${linesValid}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Branches",
-      `${branch.toFixed(2)}%`,
-      `${branchCovered} / ${branchTotal}`,
+      `${branchRate.toFixed(2)}%`,
+      `${branchesCovered} / ${branchesValid}`,
     ]);
   }
 
@@ -219,8 +210,8 @@ function markdownReport(reports, commit, options) {
   output += "## File Coverage\n\n";
 
   const fileTable = [
-    ["File", "Stmts", "Branches", "Functions", "Lines", "Uncovered Lines"],
-    ["-", ":-:", ":-:", ":-:", ":-:", "-"],
+    ["File", "Stmts", "Branches", "Lines", "Uncovered Lines"],
+    ["-", ":-:", ":-:", ":-:", "-"],
   ];
 
   for (const report of reports) {
@@ -230,17 +221,14 @@ function markdownReport(reports, commit, options) {
         filteredFiles.some((changedFile) => changedFile.endsWith(file.filename))
       );
     })) {
-      const statements = file.statements || 0;
-      const branch = file.branch || 0;
-      const functions = file.functions || 0;
-      const line = file.line || 0;
+      const lineRate = (file["line-rate"] || 0) * 100;
+      const branchRate = (file["branch-rate"] || 0) * 100;
 
       fileTable.push([
         file.filename,
-        `${statements.toFixed(2)}%`,
-        `${branch.toFixed(2)}%`,
-        `${functions.toFixed(2)}%`,
-        `${line.toFixed(2)}%`,
+        `${lineRate.toFixed(2)}%`,
+        `${branchRate.toFixed(2)}%`,
+        `${lineRate.toFixed(2)}%`,
         file.missing
           ? file.missing.map((range) => formatRangeText(range)).join(", ")
           : "",

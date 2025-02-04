@@ -176,29 +176,39 @@ function markdownReport(reports, commit, options) {
   ];
 
   for (const report of reports) {
+    const line = report.line || 0;
+    const covered = report.covered || 0;
+    const total = report.total || 0;
+    const functions = report.functions || 0;
+    const functionsCovered = report.functionsCovered || 0;
+    const functionsTotal = report.functionsTotal || 0;
+    const branch = report.branch || 0;
+    const branchCovered = report.branchCovered || 0;
+    const branchTotal = report.branchTotal || 0;
+
     summaryTable.push([
       ":large_blue_circle:",
       "Lines",
-      `${report.line.toFixed(2)}%`,
-      `${report.covered} / ${report.total}`,
+      `${line.toFixed(2)}%`,
+      `${covered} / ${total}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Statements",
-      `${report.line.toFixed(2)}%`,
-      `${report.covered} / ${report.total}`,
+      `${line.toFixed(2)}%`,
+      `${covered} / ${total}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Functions",
-      `${report.functions.toFixed(2)}%`,
-      `${report.functionsCovered} / ${report.functionsTotal}`,
+      `${functions.toFixed(2)}%`,
+      `${functionsCovered} / ${functionsTotal}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Branches",
-      `${report.branch.toFixed(2)}%`,
-      `${report.branchCovered} / ${report.branchTotal}`,
+      `${branch.toFixed(2)}%`,
+      `${branchCovered} / ${branchTotal}`,
     ]);
   }
 
@@ -220,12 +230,17 @@ function markdownReport(reports, commit, options) {
         filteredFiles.some((changedFile) => changedFile.endsWith(file.filename))
       );
     })) {
+      const statements = file.statements || 0;
+      const branch = file.branch || 0;
+      const functions = file.functions || 0;
+      const line = file.line || 0;
+
       fileTable.push([
         file.filename,
-        `${file.statements.toFixed(2)}%`,
-        `${file.branch.toFixed(2)}%`,
-        `${file.functions.toFixed(2)}%`,
-        `${file.line.toFixed(2)}%`,
+        `${statements.toFixed(2)}%`,
+        `${branch.toFixed(2)}%`,
+        `${functions.toFixed(2)}%`,
+        `${line.toFixed(2)}%`,
         file.missing
           ? file.missing.map((range) => formatRangeText(range)).join(", ")
           : "",

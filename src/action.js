@@ -174,34 +174,16 @@ function markdownReport(reports, commit, options) {
   for (const report of reports) {
     const folder = reports.length <= 1 ? "" : ` ${report.folder}`;
     for (const file of report.files.filter((file) => {
-      if (filteredFiles == null) return true;
-
-      const coverageFile = file.filename;
-
-      const isIncluded = filteredFiles.some((changedFile) => {
-        // Get the extension for both files
-        const coverageExt = coverageFile.lastIndexOf(".");
-        const changedExt = changedFile.lastIndexOf(".");
-
-        // Get base paths without any suffix before extension
-        const coverageBase = coverageFile.slice(0, coverageExt);
-        const changedBase = changedFile.slice(0, changedExt);
-
-        // Check if one is a prefix of the other
-        const match =
-          coverageBase.startsWith(changedBase) ||
-          changedBase.startsWith(coverageBase);
-
-        core.debug(`  ${changedFile} vs ${coverageFile}`);
-        core.debug(
-          `    base comparison: ${changedBase} vs ${coverageBase}: ${match}`,
-        );
-
-        return match;
-      });
-
-      core.debug(`Comparing ${coverageFile} - included: ${isIncluded}`);
-      return isIncluded;
+      core.debug(file.filename);
+      core.debug(
+        filteredFiles.some((changedFile) =>
+          changedFile.endsWith(file.filename),
+        ),
+      );
+      return (
+        filteredFiles == null ||
+        filteredFiles.some((changedFile) => changedFile.endsWith(file.filename))
+      );
     })) {
       const fileTotal = Math.floor(file.total);
       const fileLines = Math.floor(file.line);

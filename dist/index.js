@@ -39164,7 +39164,7 @@ async function listChangedFiles(pullRequestNumber) {
       `Fetching list of changed files for PR#${pullRequestNumber} from Github API`,
     );
 
-    const iterator = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
+    const iterator = client.paginate.iterator(client.rest.pulls.listFiles, {
       owner: github.context.repo.owner,
       repo: github.context.repo.repo,
       pull_number: pullRequestNumber,

@@ -39041,8 +39041,24 @@ function markdownReport(reports, commit, options) {
   for (const report of reports) {
     const folder = reports.length <= 1 ? "" : ` ${report.folder}`;
     for (const file of report.files.filter((file) => {
-      core.debug(file.filename);
-      return filteredFiles == null || filteredFiles.includes(file.filename);
+      if (filteredFiles == null) return true;
+
+      // Coverage report paths are relative to workspace
+      const coverageFile = file.filename;
+      // GitHub changed files are relative to git repository
+
+      // Try both with and without leading path segments
+      const isIncluded = filteredFiles.some((changedFile) => {
+        // Try exact match first
+        if (changedFile.endsWith(coverageFile)) return true;
+        // Try without leading path segments
+        const changedFileBase = changedFile.split("/").pop();
+        const coverageFileBase = coverageFile.split("/").pop();
+        return changedFileBase === coverageFileBase;
+      });
+
+      core.debug(`Comparing ${coverageFile} - included: ${isIncluded}`);
+      return isIncluded;
     })) {
       const fileTotal = Math.floor(file.total);
       const fileLines = Math.floor(file.line);

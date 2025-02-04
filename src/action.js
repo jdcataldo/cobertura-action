@@ -176,31 +176,26 @@ function markdownReport(reports, commit, options) {
   ];
 
   for (const report of reports) {
-    core.debug(report);
-    const lineRate = (report["line-rate"] || 0) * 100;
-    const branchRate = (report["branch-rate"] || 0) * 100;
-    const linesCovered = report["lines-covered"] || 0;
-    const linesValid = report["lines-valid"] || 0;
-    const branchesCovered = report["branches-covered"] || 0;
-    const branchesValid = report["branches-valid"] || 0;
+    const lineRate = report.line || 0;
+    const branchRate = report.branch || 0;
 
     summaryTable.push([
       ":large_blue_circle:",
       "Lines",
       `${lineRate.toFixed(2)}%`,
-      `${linesCovered} / ${linesValid}`,
+      `${report.covered || 0} / ${report.total || 0}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Statements",
       `${lineRate.toFixed(2)}%`,
-      `${linesCovered} / ${linesValid}`,
+      `${report.covered || 0} / ${report.total || 0}`,
     ]);
     summaryTable.push([
       ":large_blue_circle:",
       "Branches",
       `${branchRate.toFixed(2)}%`,
-      `${branchesCovered} / ${branchesValid}`,
+      "0 / 0",
     ]);
   }
 
@@ -211,8 +206,8 @@ function markdownReport(reports, commit, options) {
   output += "## File Coverage\n\n";
 
   const fileTable = [
-    ["File", "Stmts", "Branches", "Lines", "Uncovered Lines"],
-    ["-", ":-:", ":-:", ":-:", "-"],
+    ["File", "Stmts", "Branches", "Functions", "Lines", "Uncovered Lines"],
+    ["-", ":-:", ":-:", ":-:", ":-:", "-"],
   ];
 
   for (const report of reports) {
@@ -222,16 +217,16 @@ function markdownReport(reports, commit, options) {
         filteredFiles.some((changedFile) => changedFile.endsWith(file.filename))
       );
     })) {
-      const lineRate = (file["line-rate"] || 0) * 100;
-      const branchRate = (file["branch-rate"] || 0) * 100;
-
       fileTable.push([
         file.filename,
-        `${lineRate.toFixed(2)}%`,
-        `${branchRate.toFixed(2)}%`,
-        `${lineRate.toFixed(2)}%`,
+        `${file.total.toFixed(2)}%`,
+        `${file.branch.toFixed(2)}%`,
+        `${file.total.toFixed(2)}%`,
+        `${file.line.toFixed(2)}%`,
         file.missing
-          ? file.missing.map((range) => formatRangeText(range)).join(", ")
+          ? Array.isArray(file.missing)
+            ? file.missing.map((range) => `${range[0]}-${range[1]}`).join(", ")
+            : file.missing
           : "",
       ]);
     }

@@ -294,7 +294,7 @@ async function listChangedFiles(pullRequestNumber) {
     const paths = [];
 
     core.startGroup(
-      `Fetching list of changed files for PR#${prNumber} from Github API`,
+      `Fetching list of changed files for PR#${pullRequestNumber} from Github API`,
     );
 
     const iterator = octokit.paginate.iterator(octokit.rest.pulls.listFiles, {
